@@ -143,3 +143,51 @@ JSON
   [[ "$output" == *"must be a JSON array"* ]]
   [ "$(cat "$BATS_TEST_TMPDIR/zed-config/keymap.json")" = '{"bindings":{}}' ]
 }
+
+@test "zed:keymap:check-task succeeds when binding is absent" {
+  ZED_CONFIG_HOME="$BATS_TEST_TMPDIR/zed-config" run ctl zed:keymap:check-task \
+    --keystroke cmd-shift-d \
+    --task "comments: dispatch current file"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"is available"* ]]
+  [ ! -e "$BATS_TEST_TMPDIR/zed-config/keymap.json" ]
+}
+
+@test "zed:keymap:check-task fails on conflicting binding without writing" {
+  mkdir -p "$BATS_TEST_TMPDIR/zed-config"
+  cat > "$BATS_TEST_TMPDIR/zed-config/keymap.json" <<'JSON'
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-shift-d": "workspace::Open"
+    }
+  }
+]
+JSON
+
+  ZED_CONFIG_HOME="$BATS_TEST_TMPDIR/zed-config" run ctl zed:keymap:check-task \
+    --keystroke cmd-shift-d \
+    --task "comments: dispatch current file"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"already exists with a different value"* ]]
+  [ "$(jq -r '.[0].bindings["cmd-shift-d"]' "$BATS_TEST_TMPDIR/zed-config/keymap.json")" = "workspace::Open" ]
+}
+
+@test "zed:keymap:check-rerun succeeds for matching existing binding" {
+  mkdir -p "$BATS_TEST_TMPDIR/zed-config"
+  cat > "$BATS_TEST_TMPDIR/zed-config/keymap.json" <<'JSON'
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-shift-r": ["task::Rerun", {"reevaluate_context": true}]
+    }
+  }
+]
+JSON
+
+  ZED_CONFIG_HOME="$BATS_TEST_TMPDIR/zed-config" run ctl zed:keymap:check-rerun \
+    --keystroke cmd-shift-r
+  [ "$status" -eq 0 ]
+}

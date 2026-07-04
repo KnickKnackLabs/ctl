@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#MISE description="Check whether a Zed rerun key binding can be installed"
+#MISE dir="{{config_root}}"
+#USAGE flag "--keystroke <keystroke>" required=#true help="Zed key binding, for example cmd-shift-r"
+#USAGE flag "--context <context>" default="Workspace" help="Zed keymap context"
+#USAGE flag "--reevaluate-context" default=#true help="Reevaluate Zed task variables before rerun"
+set -euo pipefail
+
+source "$MISE_CONFIG_ROOT/lib/zed/keymap.sh"
+
+binding_json=$(jq -n --argjson reevaluate "$usage_reevaluate_context" '["task::Rerun", {reevaluate_context: $reevaluate}]')
+zed_keymap_check_binding_json "$usage_context" "$usage_keystroke" "$binding_json"

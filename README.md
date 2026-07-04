@@ -7,7 +7,7 @@
 Boring JSON surgery for tools that should not each own it.
 
 ![shape: mise + BATS](https://img.shields.io/badge/shape-mise%20%2B%20BATS-4EAA25?style=flat&logo=gnubash&logoColor=white)
-[![tests: 20](https://img.shields.io/badge/tests-20-brightgreen?style=flat)](test/)
+[![tests: 23](https://img.shields.io/badge/tests-23-brightgreen?style=flat)](test/)
 ![lints: 9](https://img.shields.io/badge/lints-9-blue?style=flat)
 ![README: TSX](https://img.shields.io/badge/README-TSX-f472b6?style=flat)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
@@ -60,10 +60,14 @@ All commands target the caller directory's `.zed/tasks.json`. Existing tasks are
 # Print the global Zed keymap file path.
 ctl zed keymap path
 
+# Check whether a binding can be installed without conflicts.
+ctl zed keymap check-task   --keystroke cmd-shift-d   --task "comments: dispatch current file"
+
 # Bind a key to spawn a named task.
 ctl zed keymap bind-task   --keystroke cmd-shift-d   --task "comments: dispatch current file"
 
-# Bind a key to rerun the last task with fresh Zed context.
+# Check/bind rerun with fresh Zed context.
+ctl zed keymap check-rerun --keystroke cmd-shift-r
 ctl zed keymap bind-rerun   --keystroke cmd-shift-r   --reevaluate-context
 ```
 
@@ -79,7 +83,9 @@ mise run zed:tasks:list
 mise run zed:tasks:upsert --label example --command echo --arg hello
 mise run zed:tasks:remove --label example
 mise run zed:keymap:path
+mise run zed:keymap:check-task --keystroke cmd-shift-d --task example
 mise run zed:keymap:bind-task --keystroke cmd-shift-d --task example
+mise run zed:keymap:check-rerun --keystroke cmd-shift-r
 mise run zed:keymap:bind-rerun --keystroke cmd-shift-r
 ```
 
@@ -89,17 +95,19 @@ When installed by shiv, the shim exports `CTL_CALLER_PWD` before running the tas
 
 ## Tasks
 
-| Task                             | Description                                         |
-| -------------------------------- | --------------------------------------------------- |
-| `mise run doctor`                | Check local development setup                       |
-| `mise run test`                  | Run BATS tests                                      |
-| `mise run zed:keymap:bind-rerun` | Bind a Zed key to rerun the last task               |
-| `mise run zed:keymap:bind-task`  | Bind a Zed key to spawn a named task                |
-| `mise run zed:keymap:path`       | Print the global Zed keymap.json path               |
-| `mise run zed:tasks:list`        | Print project-local Zed tasks as JSON               |
-| `mise run zed:tasks:path`        | Print the project-local Zed tasks.json path         |
-| `mise run zed:tasks:remove`      | Remove a project-local Zed task by label            |
-| `mise run zed:tasks:upsert`      | Insert or replace a project-local Zed task by label |
+| Task                              | Description                                            |
+| --------------------------------- | ------------------------------------------------------ |
+| `mise run doctor`                 | Check local development setup                          |
+| `mise run test`                   | Run BATS tests                                         |
+| `mise run zed:keymap:bind-rerun`  | Bind a Zed key to rerun the last task                  |
+| `mise run zed:keymap:bind-task`   | Bind a Zed key to spawn a named task                   |
+| `mise run zed:keymap:check-rerun` | Check whether a Zed rerun key binding can be installed |
+| `mise run zed:keymap:check-task`  | Check whether a Zed task key binding can be installed  |
+| `mise run zed:keymap:path`        | Print the global Zed keymap.json path                  |
+| `mise run zed:tasks:list`         | Print project-local Zed tasks as JSON                  |
+| `mise run zed:tasks:path`         | Print the project-local Zed tasks.json path            |
+| `mise run zed:tasks:remove`       | Remove a project-local Zed task by label               |
+| `mise run zed:tasks:upsert`       | Insert or replace a project-local Zed task by label    |
 
 ## Repo inventory
 
@@ -144,7 +152,7 @@ readme build --check
 git diff --check
 ```
 
-The suite currently has **20 tests** and **9 public tasks**. CI runs on **ubuntu-latest + macos-latest**.
+The suite currently has **23 tests** and **11 public tasks**. CI runs on **ubuntu-latest + macos-latest**.
 
 <div align="center">
 

@@ -43,6 +43,23 @@ zed_keymap_binding_exists_with_different_value() {
     "$keymap_file" >/dev/null
 }
 
+zed_keymap_check_binding_json() {
+  local context="$1"
+  local keystroke="$2"
+  local binding_json="$3"
+  local keymap_file
+
+  keymap_file=$(zed_keymap_path)
+  zed_keymap_validate_array "$keymap_file"
+
+  if zed_keymap_binding_exists_with_different_value "$keymap_file" "$context" "$keystroke" "$binding_json"; then
+    echo "ctl zed keymap: $context binding '$keystroke' already exists with a different value; rerun with --force to replace it" >&2
+    return 1
+  fi
+
+  printf 'ctl zed keymap: %s binding %s is available\n' "$context" "$keystroke"
+}
+
 zed_keymap_upsert_binding_json() {
   local context="$1"
   local keystroke="$2"
@@ -54,11 +71,10 @@ zed_keymap_upsert_binding_json() {
   keymap_dir=$(dirname "$keymap_file")
   mkdir -p "$keymap_dir"
 
-  zed_keymap_validate_array "$keymap_file"
-
-  if [ "$force" != "true" ] && zed_keymap_binding_exists_with_different_value "$keymap_file" "$context" "$keystroke" "$binding_json"; then
-    echo "ctl zed keymap: $context binding '$keystroke' already exists with a different value; rerun with --force to replace it" >&2
-    return 1
+  if [ "$force" != "true" ]; then
+    zed_keymap_check_binding_json "$context" "$keystroke" "$binding_json" >/dev/null
+  else
+    zed_keymap_validate_array "$keymap_file"
   fi
 
   tmp=$(mktemp)

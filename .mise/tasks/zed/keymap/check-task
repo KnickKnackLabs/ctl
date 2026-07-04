@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#MISE description="Check whether a Zed task key binding can be installed"
+#MISE dir="{{config_root}}"
+#USAGE flag "--keystroke <keystroke>" required=#true help="Zed key binding, for example cmd-shift-d"
+#USAGE flag "--task <task>" required=#true help="Zed task label to spawn"
+#USAGE flag "--context <context>" default="Workspace" help="Zed keymap context"
+set -euo pipefail
+
+source "$MISE_CONFIG_ROOT/lib/zed/keymap.sh"
+
+binding_json=$(jq -n --arg task "$usage_task" '["task::Spawn", {task_name: $task}]')
+zed_keymap_check_binding_json "$usage_context" "$usage_keystroke" "$binding_json"

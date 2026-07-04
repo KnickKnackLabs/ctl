@@ -218,12 +218,18 @@ ctl zed tasks remove --label "comments: dispatch current file"`}</CodeBlock>
       <CodeBlock lang="bash">{`# Print the global Zed keymap file path.
 ctl zed keymap path
 
+# Check whether a binding can be installed without conflicts.
+ctl zed keymap check-task \
+  --keystroke cmd-shift-d \
+  --task "comments: dispatch current file"
+
 # Bind a key to spawn a named task.
 ctl zed keymap bind-task \
   --keystroke cmd-shift-d \
   --task "comments: dispatch current file"
 
-# Bind a key to rerun the last task with fresh Zed context.
+# Check/bind rerun with fresh Zed context.
+ctl zed keymap check-rerun --keystroke cmd-shift-r
 ctl zed keymap bind-rerun \
   --keystroke cmd-shift-r \
   --reevaluate-context`}</CodeBlock>
@@ -249,7 +255,9 @@ mise run zed:tasks:list
 mise run zed:tasks:upsert --label example --command echo --arg hello
 mise run zed:tasks:remove --label example
 mise run zed:keymap:path
+mise run zed:keymap:check-task --keystroke cmd-shift-d --task example
 mise run zed:keymap:bind-task --keystroke cmd-shift-d --task example
+mise run zed:keymap:check-rerun --keystroke cmd-shift-r
 mise run zed:keymap:bind-rerun --keystroke cmd-shift-r`}</CodeBlock>
     </Section>
 
