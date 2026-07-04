@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Print the project-local Zed tasks.json path"
+#MISE dir="{{config_root}}"
+set -euo pipefail
+
+source "$MISE_CONFIG_ROOT/lib/zed_tasks.sh"
+
+zed_tasks_path

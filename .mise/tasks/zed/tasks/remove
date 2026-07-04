@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Remove a project-local Zed task by label"
+#MISE dir="{{config_root}}"
+#USAGE flag "--label <label>" required=#true help="Task label to remove"
+#USAGE example "mise run zed:tasks:remove --label 'comments: dispatch current file'" header="Remove a task"
+set -euo pipefail
+
+source "$MISE_CONFIG_ROOT/lib/zed_tasks.sh"
+
+zed_tasks_remove_label "$usage_label"

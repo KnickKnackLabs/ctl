@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#MISE description="Insert or replace a project-local Zed task by label"
+#MISE dir="{{config_root}}"
+#USAGE flag "--label <label>" required=#true help="Task label"
+#USAGE flag "--command <command>" required=#true help="Command to run"
+#USAGE flag "--arg <arg>" default="" var=#true help="Command argument (repeatable)"
+#USAGE flag "--save <save>" default="" help="Zed save policy, for example current"
+#USAGE flag "--hide <hide>" default="" help="Zed hide policy, for example on_success"
+#USAGE example "mise run zed:tasks:upsert --label 'comments: dispatch current file' --command comments --arg dispatch --arg '$ZED_FILE' --save current --hide on_success" header="Upsert a current-file task"
+set -euo pipefail
+
+source "$MISE_CONFIG_ROOT/lib/zed_tasks.sh"
+
+args=()
+if [ -n "${usage_arg:-}" ]; then
+  while IFS= read -r arg; do
+    [ -z "$arg" ] && continue
+    args+=("$arg")
+  done < <(printf '%s' "$usage_arg" | xargs printf '%s\n')
+fi
+
+args_json=$(printf '%s\n' ${args[@]+"${args[@]}"} | jq -R . | jq -s .)
+task_json=$(jq -n \
+  --arg label "$usage_label" \
+  --arg command "$usage_command" \
+  --argjson args "$args_json" \
+  --arg save "${usage_save:-}" \
+  --arg hide "${usage_hide:-}" \
+  '{label: $label, command: $command, args: $args}
+   + (if $save == "" then {} else {save: $save} end)
+   + (if $hide == "" then {} else {hide: $hide} end)')
+
+zed_tasks_upsert_json "$task_json"
