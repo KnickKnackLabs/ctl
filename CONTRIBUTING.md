@@ -15,7 +15,9 @@ ctl/
 ├── .mise/tasks/test             # Canonical BATS runner
 ├── .mise/tasks/doctor           # Local health checks + optional hook status
 ├── .mise/tasks/zed/tasks/*      # Zed tasks.json commands
-├── lib/zed_tasks.sh             # Shared Zed task JSON helpers
+├── .mise/tasks/zed/keymap/*     # Zed keymap.json commands
+├── lib/zed/tasks.sh             # Shared Zed task JSON helpers
+├── lib/zed/keymap.sh            # Shared Zed keymap JSON helpers
 └── test/                        # BATS tests and helpers
 ```
 

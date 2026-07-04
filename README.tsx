@@ -132,7 +132,9 @@ const inventory = [
   ["README.tsx", "programmable README source"],
   ["CONTRIBUTING.md", "repo-entry orientation surface"],
   [".mise/tasks/zed/tasks/", "Zed tasks.json commands"],
-  ["lib/zed_tasks.sh", "shared Zed task JSON helpers"],
+  [".mise/tasks/zed/keymap/", "Zed keymap.json commands"],
+  ["lib/zed/tasks.sh", "shared Zed task JSON helpers"],
+  ["lib/zed/keymap.sh", "shared Zed keymap JSON helpers"],
   ["test/", "BATS coverage through mise"],
   [".github/workflows/test.yml", "Ubuntu/macOS CI"],
 ];
@@ -212,6 +214,31 @@ ctl zed tasks remove --label "comments: dispatch current file"`}</CodeBlock>
       </Paragraph>
     </Section>
 
+    <Section title="Zed keymap">
+      <CodeBlock lang="bash">{`# Print the global Zed keymap file path.
+ctl zed keymap path
+
+# Bind a key to spawn a named task.
+ctl zed keymap bind-task \
+  --keystroke cmd-shift-d \
+  --task "comments: dispatch current file"
+
+# Bind a key to rerun the last task with fresh Zed context.
+ctl zed keymap bind-rerun \
+  --keystroke cmd-shift-r \
+  --reevaluate-context`}</CodeBlock>
+
+      <Paragraph>
+        {"Keymap commands target Zed's global "}
+        <Code>keymap.json</Code>
+        {". Existing bindings are preserved. If a requested keystroke already has a different binding in the target context, "}
+        <Code>ctl</Code>
+        {" fails without clobbering it unless "}
+        <Code>--force</Code>
+        {" is passed."}
+      </Paragraph>
+    </Section>
+
     <Section title="Using from mise while developing">
       <Paragraph>
         {"Shiv resolves space-separated commands to mise's colon-delimited task names. Inside this repo, call the tasks directly:"}
@@ -220,7 +247,10 @@ ctl zed tasks remove --label "comments: dispatch current file"`}</CodeBlock>
       <CodeBlock lang="bash">{`mise run zed:tasks:path
 mise run zed:tasks:list
 mise run zed:tasks:upsert --label example --command echo --arg hello
-mise run zed:tasks:remove --label example`}</CodeBlock>
+mise run zed:tasks:remove --label example
+mise run zed:keymap:path
+mise run zed:keymap:bind-task --keystroke cmd-shift-d --task example
+mise run zed:keymap:bind-rerun --keystroke cmd-shift-r`}</CodeBlock>
     </Section>
 
     <Section title="Project-local path resolution">

@@ -9,7 +9,7 @@
 #USAGE example "mise run zed:tasks:upsert --label 'comments: dispatch current file' --command comments --arg dispatch --arg '$ZED_FILE' --save current --hide on_success" header="Upsert a current-file task"
 set -euo pipefail
 
-source "$MISE_CONFIG_ROOT/lib/zed_tasks.sh"
+source "$MISE_CONFIG_ROOT/lib/zed/tasks.sh"
 
 args=()
 if [ -n "${usage_arg:-}" ]; then

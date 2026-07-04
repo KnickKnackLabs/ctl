@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load test_helper
+load ../test_helper
 
 @test "zed:tasks:path prints caller-local tasks.json path" {
   expected="$(cd "$BATS_TEST_TMPDIR" && pwd -P)/.zed/tasks.json"

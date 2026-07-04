@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Print the global Zed keymap.json path"
+#MISE dir="{{config_root}}"
+set -euo pipefail
+
+source "$MISE_CONFIG_ROOT/lib/zed/keymap.sh"
+
+zed_keymap_path

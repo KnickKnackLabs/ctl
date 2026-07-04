@@ -5,6 +5,6 @@
 #USAGE example "mise run zed:tasks:remove --label 'comments: dispatch current file'" header="Remove a task"
 set -euo pipefail
 
-source "$MISE_CONFIG_ROOT/lib/zed_tasks.sh"
+source "$MISE_CONFIG_ROOT/lib/zed/tasks.sh"
 
 zed_tasks_remove_label "$usage_label"

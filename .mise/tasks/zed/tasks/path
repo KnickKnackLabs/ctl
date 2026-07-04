@@ -3,6 +3,6 @@
 #MISE dir="{{config_root}}"
 set -euo pipefail
 
-source "$MISE_CONFIG_ROOT/lib/zed_tasks.sh"
+source "$MISE_CONFIG_ROOT/lib/zed/tasks.sh"
 
 zed_tasks_path

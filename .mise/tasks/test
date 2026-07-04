@@ -20,18 +20,31 @@ fi
 resolved=()
 has_target=false
 
+append_bats_files_in_dir() {
+  local dir="$1"
+  while IFS= read -r file; do
+    resolved+=("$file")
+  done < <(find "$dir" -type f -name '*.bats' | sort)
+}
+
 for arg in ${args[@]+"${args[@]}"}; do
   if [[ "$arg" != -* && "$arg" != *.bats && -f "$TEST_DIR/$arg.bats" ]]; then
     resolved+=("$TEST_DIR/$arg.bats")
     has_target=true
+  elif [[ "$arg" != -* && -d "$TEST_DIR/$arg" ]]; then
+    append_bats_files_in_dir "$TEST_DIR/$arg"
+    has_target=true
+  elif [[ -d "$arg" ]]; then
+    append_bats_files_in_dir "$arg"
+    has_target=true
   else
-    [[ "$arg" == *.bats || -d "$arg" ]] && has_target=true
+    [[ "$arg" == *.bats ]] && has_target=true
     resolved+=("$arg")
   fi
 done
 
 if ! $has_target; then
-  resolved+=("$TEST_DIR/")
+  append_bats_files_in_dir "$TEST_DIR"
 fi
 
 exec bats --print-output-on-failure "${resolved[@]}"
