@@ -7,7 +7,7 @@
 Boring JSON surgery for tools that should not each own it.
 
 ![shape: mise + BATS](https://img.shields.io/badge/shape-mise%20%2B%20BATS-4EAA25?style=flat&logo=gnubash&logoColor=white)
-[![tests: 23](https://img.shields.io/badge/tests-23-brightgreen?style=flat)](test/)
+[![tests: 34](https://img.shields.io/badge/tests-34-brightgreen?style=flat)](test/)
 ![lints: 9](https://img.shields.io/badge/lints-9-blue?style=flat)
 ![README: TSX](https://img.shields.io/badge/README-TSX-f472b6?style=flat)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
@@ -18,7 +18,7 @@ Boring JSON surgery for tools that should not each own it.
 
 ## What this is
 
-`ctl` is a shiv-installable CLI for app and editor integrations that need a small, reusable command surface. The first version manages project-local Zed tasks in `.zed/tasks.json`.
+`ctl` is a shiv-installable CLI for app and editor integrations that need a small, reusable command surface. Its first namespace manages Zed task and keymap JSON.
 
 The immediate extraction target is `comments integrations zed`: it should not own generic Zed JSON upsert logic forever. `ctl zed tasks ...` gives that logic one home so other tools can reuse it.
 
@@ -46,13 +46,17 @@ ctl zed tasks upsert \
   --arg dispatch \
   --arg '$ZED_FILE' \
   --save current \
-  --hide on_success
+  --reveal never \
+  --hide on_success \
+  --shell-program /bin/zsh \
+  --shell-arg=-f \
+  --env COMMENT_CHAT_AS=or
 
 # Remove tasks with a matching label.
 ctl zed tasks remove --label "comments: dispatch current file"
 ```
 
-All commands target the caller directory's `.zed/tasks.json`. Existing tasks are preserved. Upsert replaces tasks with the same `label` and appends when the label is new. Invalid JSON or a non-array tasks file fails without clobbering the file.
+All commands target the caller directory's `.zed/tasks.json`. Existing tasks are preserved. Upsert replaces tasks with the same `label` and appends when the label is new. Optional reveal, shell, and environment fields are emitted only when the caller supplies them. Invalid values, invalid JSON, or a non-array tasks file fail without clobbering the file.
 
 ## Zed keymap
 
@@ -69,6 +73,10 @@ ctl zed keymap bind-task   --keystroke cmd-shift-d   --task "comments: dispatch 
 # Check/bind rerun with fresh Zed context.
 ctl zed keymap check-rerun --keystroke cmd-shift-r
 ctl zed keymap bind-rerun   --keystroke cmd-shift-r   --reevaluate-context
+
+# Check/bind a concrete inline snippet action.
+ctl zed keymap check-snippet   --context 'Editor && extension == md'   --keystroke 'cmd-k i'   --snippet '<!-- ! "@ikma ${1:feedback}" | mise comment -->$0'
+ctl zed keymap bind-snippet   --context 'Editor && extension == md'   --keystroke 'cmd-k i'   --snippet '<!-- ! "@ikma ${1:feedback}" | mise comment -->$0'
 ```
 
 Keymap commands target Zed's global `keymap.json`. Existing bindings are preserved. If a requested keystroke already has a different binding in the target context, `ctl` fails without clobbering it unless `--force` is passed.
@@ -87,6 +95,8 @@ mise run zed:keymap:check-task --keystroke cmd-shift-d --task example
 mise run zed:keymap:bind-task --keystroke cmd-shift-d --task example
 mise run zed:keymap:check-rerun --keystroke cmd-shift-r
 mise run zed:keymap:bind-rerun --keystroke cmd-shift-r
+mise run zed:keymap:check-snippet --context Editor --keystroke 'cmd-k i' --snippet 'Hello ${1:there}$0'
+mise run zed:keymap:bind-snippet --context Editor --keystroke 'cmd-k i' --snippet 'Hello ${1:there}$0'
 ```
 
 ## Project-local path resolution
@@ -95,19 +105,21 @@ When installed by shiv, the shim exports `CTL_CALLER_PWD` before running the tas
 
 ## Tasks
 
-| Task                              | Description                                            |
-| --------------------------------- | ------------------------------------------------------ |
-| `mise run doctor`                 | Check local development setup                          |
-| `mise run test`                   | Run BATS tests                                         |
-| `mise run zed:keymap:bind-rerun`  | Bind a Zed key to rerun the last task                  |
-| `mise run zed:keymap:bind-task`   | Bind a Zed key to spawn a named task                   |
-| `mise run zed:keymap:check-rerun` | Check whether a Zed rerun key binding can be installed |
-| `mise run zed:keymap:check-task`  | Check whether a Zed task key binding can be installed  |
-| `mise run zed:keymap:path`        | Print the global Zed keymap.json path                  |
-| `mise run zed:tasks:list`         | Print project-local Zed tasks as JSON                  |
-| `mise run zed:tasks:path`         | Print the project-local Zed tasks.json path            |
-| `mise run zed:tasks:remove`       | Remove a project-local Zed task by label               |
-| `mise run zed:tasks:upsert`       | Insert or replace a project-local Zed task by label    |
+| Task                                | Description                                              |
+| ----------------------------------- | -------------------------------------------------------- |
+| `mise run doctor`                   | Check local development setup                            |
+| `mise run test`                     | Run BATS tests                                           |
+| `mise run zed:keymap:bind-rerun`    | Bind a Zed key to rerun the last task                    |
+| `mise run zed:keymap:bind-snippet`  | Bind a Zed key to insert an inline snippet               |
+| `mise run zed:keymap:bind-task`     | Bind a Zed key to spawn a named task                     |
+| `mise run zed:keymap:check-rerun`   | Check whether a Zed rerun key binding can be installed   |
+| `mise run zed:keymap:check-snippet` | Check whether a Zed snippet key binding can be installed |
+| `mise run zed:keymap:check-task`    | Check whether a Zed task key binding can be installed    |
+| `mise run zed:keymap:path`          | Print the global Zed keymap.json path                    |
+| `mise run zed:tasks:list`           | Print project-local Zed tasks as JSON                    |
+| `mise run zed:tasks:path`           | Print the project-local Zed tasks.json path              |
+| `mise run zed:tasks:remove`         | Remove a project-local Zed task by label                 |
+| `mise run zed:tasks:upsert`         | Insert or replace a project-local Zed task by label      |
 
 ## Repo inventory
 
@@ -152,7 +164,7 @@ readme build --check
 git diff --check
 ```
 
-The suite currently has **23 tests** and **11 public tasks**. CI runs on **ubuntu-latest + macos-latest**.
+The suite currently has **34 tests** and **13 public tasks**. CI runs on **ubuntu-latest + macos-latest**.
 
 <div align="center">
 

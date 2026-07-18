@@ -4,30 +4,131 @@
 #USAGE flag "--label <label>" required=#true help="Task label"
 #USAGE flag "--command <command>" required=#true help="Command to run"
 #USAGE flag "--arg <arg>" default="" var=#true help="Command argument (repeatable)"
-#USAGE flag "--save <save>" default="" help="Zed save policy, for example current"
-#USAGE flag "--hide <hide>" default="" help="Zed hide policy, for example on_success"
-#USAGE example "mise run zed:tasks:upsert --label 'comments: dispatch current file' --command comments --arg dispatch --arg '$ZED_FILE' --save current --hide on_success" header="Upsert a current-file task"
+#USAGE flag "--save <save>" default="" help="Zed save policy: all, current, or none"
+#USAGE flag "--reveal <reveal>" default="" help="Zed reveal policy: always, no_focus, or never"
+#USAGE flag "--hide <hide>" default="" help="Zed hide policy: never, always, or on_success"
+#USAGE flag "--shell-program <shell_program>" default="" help="Explicit Zed task shell program"
+#USAGE flag "--shell-arg <shell_arg>" default="" var=#true help="Shell argument (repeatable; requires --shell-program)"
+#USAGE flag "--env <env>" default="" var=#true help="Task environment entry as name=value (repeatable)"
+#USAGE example "mise run zed:tasks:upsert --label 'comments: dispatch current file' --command comments --arg dispatch --arg '$ZED_FILE' --save current --reveal never --hide on_success" header="Upsert a current-file task"
+#USAGE example "mise run zed:tasks:upsert --label review --command comments --shell-program /bin/zsh --shell-arg=-f --env COMMENT_CHAT_AS=or" header="Set an explicit shell and environment"
 set -euo pipefail
 
 source "$MISE_CONFIG_ROOT/lib/zed/tasks.sh"
 
+usage_values() {
+  local raw="$1"
+  [ -n "$raw" ] || return 0
+  printf '%s' "$raw" | xargs printf '%s\n'
+}
+
+json_array() {
+  if [ "$#" -eq 0 ]; then
+    printf '[]\n'
+  else
+    printf '%s\n' "$@" | jq -R . | jq -s .
+  fi
+}
+
+validate_optional_enum() {
+  local field="$1"
+  local value="$2"
+  shift 2
+
+  [ -n "$value" ] || return 0
+
+  local allowed
+  for allowed in "$@"; do
+    [ "$value" != "$allowed" ] || return 0
+  done
+
+  printf 'ctl zed tasks upsert: invalid %s value: %s\n' "$field" "$value" >&2
+  return 1
+}
+
+save="${usage_save:-}"
+reveal="${usage_reveal:-}"
+hide="${usage_hide:-}"
+shell_program="${usage_shell_program:-}"
+
+validate_optional_enum save "$save" all current none
+validate_optional_enum reveal "$reveal" always no_focus never
+validate_optional_enum hide "$hide" never always on_success
+
 args=()
-if [ -n "${usage_arg:-}" ]; then
-  while IFS= read -r arg; do
-    [ -z "$arg" ] && continue
-    args+=("$arg")
-  done < <(printf '%s' "$usage_arg" | xargs printf '%s\n')
+while IFS= read -r value; do
+  [ -n "$value" ] || continue
+  args+=("$value")
+done < <(usage_values "${usage_arg:-}")
+args_json="$(json_array ${args[@]+"${args[@]}"})"
+
+shell_args=()
+while IFS= read -r value; do
+  [ -n "$value" ] || continue
+  shell_args+=("$value")
+done < <(usage_values "${usage_shell_arg:-}")
+
+if [ "${#shell_args[@]}" -gt 0 ] && [ -z "$shell_program" ]; then
+  echo "ctl zed tasks upsert: --shell-arg requires --shell-program" >&2
+  exit 1
 fi
 
-args_json=$(printf '%s\n' ${args[@]+"${args[@]}"} | jq -R . | jq -s .)
-task_json=$(jq -n \
-  --arg label "$usage_label" \
-  --arg command "$usage_command" \
-  --argjson args "$args_json" \
-  --arg save "${usage_save:-}" \
-  --arg hide "${usage_hide:-}" \
-  '{label: $label, command: $command, args: $args}
-   + (if $save == "" then {} else {save: $save} end)
-   + (if $hide == "" then {} else {hide: $hide} end)')
+shell_json='null'
+if [ -n "$shell_program" ]; then
+  if [ "${#shell_args[@]}" -gt 0 ]; then
+    shell_args_json="$(json_array ${shell_args[@]+"${shell_args[@]}"})"
+    shell_json="$(
+      jq -n \
+        --arg program "$shell_program" \
+        --argjson args "$shell_args_json" \
+        '{with_arguments: {program: $program, args: $args}}'
+    )"
+  else
+    shell_json="$(jq -n --arg program "$shell_program" '{program: $program}')"
+  fi
+fi
+
+env_json='{}'
+while IFS= read -r entry; do
+  [ -n "$entry" ] || continue
+
+  case "$entry" in
+    *=*) ;;
+    *)
+      printf 'ctl zed tasks upsert: invalid --env entry (expected name=value): %s\n' "$entry" >&2
+      exit 1
+      ;;
+  esac
+
+  name="${entry%%=*}"
+  value="${entry#*=}"
+  if ! [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+    printf 'ctl zed tasks upsert: invalid environment name: %s\n' "$name" >&2
+    exit 1
+  fi
+  if jq -e --arg name "$name" 'has($name)' <<<"$env_json" >/dev/null; then
+    printf 'ctl zed tasks upsert: duplicate environment name: %s\n' "$name" >&2
+    exit 1
+  fi
+  env_json="$(jq --arg name "$name" --arg value "$value" '. + {($name): $value}' <<<"$env_json")"
+done < <(usage_values "${usage_env:-}")
+
+task_json="$(
+  jq -n \
+    --arg label "$usage_label" \
+    --arg command "$usage_command" \
+    --argjson args "$args_json" \
+    --arg save "$save" \
+    --arg reveal "$reveal" \
+    --arg hide "$hide" \
+    --argjson shell "$shell_json" \
+    --argjson env "$env_json" \
+    '{label: $label, command: $command, args: $args}
+     + (if $save == "" then {} else {save: $save} end)
+     + (if $reveal == "" then {} else {reveal: $reveal} end)
+     + (if $hide == "" then {} else {hide: $hide} end)
+     + (if $shell == null then {} else {shell: $shell} end)
+     + (if ($env | length) == 0 then {} else {env: $env} end)'
+)"
 
 zed_tasks_upsert_json "$task_json"
