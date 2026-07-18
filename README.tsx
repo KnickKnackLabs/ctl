@@ -164,9 +164,7 @@ const readme = (
     <Section title="What this is">
       <Paragraph>
         <Code>ctl</Code>
-        {" is a shiv-installable CLI for app and editor integrations that need a small, reusable command surface. The first version manages project-local Zed tasks in "}
-        <Code>.zed/tasks.json</Code>
-        {"."}
+        {" is a shiv-installable CLI for app and editor integrations that need a small, reusable command surface. Its first namespace manages Zed task and keymap JSON."}
       </Paragraph>
 
       <Paragraph>
@@ -200,7 +198,11 @@ ctl zed tasks upsert \\
   --arg dispatch \\
   --arg '$ZED_FILE' \\
   --save current \\
-  --hide on_success
+  --reveal never \\
+  --hide on_success \\
+  --shell-program /bin/zsh \\
+  --shell-arg=-f \\
+  --env COMMENT_CHAT_AS=or
 
 # Remove tasks with a matching label.
 ctl zed tasks remove --label "comments: dispatch current file"`}</CodeBlock>
@@ -210,7 +212,7 @@ ctl zed tasks remove --label "comments: dispatch current file"`}</CodeBlock>
         <Code>.zed/tasks.json</Code>
         {". Existing tasks are preserved. Upsert replaces tasks with the same "}
         <Code>label</Code>
-        {" and appends when the label is new. Invalid JSON or a non-array tasks file fails without clobbering the file."}
+        {" and appends when the label is new. Optional reveal, shell, and environment fields are emitted only when the caller supplies them. Invalid values, invalid JSON, or a non-array tasks file fail without clobbering the file."}
       </Paragraph>
     </Section>
 
@@ -232,7 +234,17 @@ ctl zed keymap bind-task \
 ctl zed keymap check-rerun --keystroke cmd-shift-r
 ctl zed keymap bind-rerun \
   --keystroke cmd-shift-r \
-  --reevaluate-context`}</CodeBlock>
+  --reevaluate-context
+
+# Check/bind a concrete inline snippet action.
+ctl zed keymap check-snippet \
+  --context 'Editor && extension == md' \
+  --keystroke 'cmd-k i' \
+  --snippet '<!-- ! "@ikma \${1:feedback}" | mise comment -->$0'
+ctl zed keymap bind-snippet \
+  --context 'Editor && extension == md' \
+  --keystroke 'cmd-k i' \
+  --snippet '<!-- ! "@ikma \${1:feedback}" | mise comment -->$0'`}</CodeBlock>
 
       <Paragraph>
         {"Keymap commands target Zed's global "}
@@ -258,7 +270,9 @@ mise run zed:keymap:path
 mise run zed:keymap:check-task --keystroke cmd-shift-d --task example
 mise run zed:keymap:bind-task --keystroke cmd-shift-d --task example
 mise run zed:keymap:check-rerun --keystroke cmd-shift-r
-mise run zed:keymap:bind-rerun --keystroke cmd-shift-r`}</CodeBlock>
+mise run zed:keymap:bind-rerun --keystroke cmd-shift-r
+mise run zed:keymap:check-snippet --context Editor --keystroke 'cmd-k i' --snippet 'Hello \${1:there}$0'
+mise run zed:keymap:bind-snippet --context Editor --keystroke 'cmd-k i' --snippet 'Hello \${1:there}$0'`}</CodeBlock>
     </Section>
 
     <Section title="Project-local path resolution">

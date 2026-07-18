@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#MISE description="Check whether a Zed snippet key binding can be installed"
+#MISE dir="{{config_root}}"
+#USAGE flag "--keystroke <keystroke>" required=#true help="Zed key binding, for example cmd-k i"
+#USAGE flag "--snippet <snippet>" required=#true help="Inline Zed snippet text"
+#USAGE flag "--context <context>" default="Editor" help="Zed keymap context"
+#USAGE example "mise run zed:keymap:check-snippet --context 'Editor && extension == md' --keystroke 'cmd-k i' --snippet '<!-- ! \"@ikma ${1:feedback}\" | mise comment -->$0'" header="Check a Markdown snippet binding"
+set -euo pipefail
+
+source "$MISE_CONFIG_ROOT/lib/zed/keymap.sh"
+
+binding_json="$(jq -n --arg snippet "$usage_snippet" '["editor::InsertSnippet", {snippet: $snippet}]')"
+zed_keymap_check_binding_json "$usage_context" "$usage_keystroke" "$binding_json"
