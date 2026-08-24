@@ -5,6 +5,7 @@
 #USAGE example "mise run test" header="Run all tests"
 #USAGE example "mise run test skeleton" header="Run a specific suite by name"
 #USAGE example "mise run test --filter doctor" header="Filter tests by name"
+#USAGE example "mise run test --jobs 4" header="Run isolated BATS tests in parallel"
 set -euo pipefail
 
 TEST_DIR="$MISE_CONFIG_ROOT/test"
@@ -47,4 +48,4 @@ if ! $has_target; then
   append_bats_files_in_dir "$TEST_DIR"
 fi
 
-exec bats --print-output-on-failure "${resolved[@]}"
+exec bats --print-output-on-failure ${resolved[@]+"${resolved[@]}"}

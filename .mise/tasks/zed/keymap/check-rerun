@@ -4,6 +4,7 @@
 #USAGE flag "--keystroke <keystroke>" required=#true help="Zed key binding, for example cmd-shift-r"
 #USAGE flag "--context <context>" default="Workspace" help="Zed keymap context"
 #USAGE flag "--reevaluate-context" default=#true help="Reevaluate Zed task variables before rerun"
+#USAGE example "mise run zed:keymap:check-rerun --keystroke cmd-shift-r --reevaluate-context" header="Check a task rerun binding"
 set -euo pipefail
 
 source "$MISE_CONFIG_ROOT/lib/zed/keymap.sh"
