@@ -7,7 +7,7 @@
 Boring JSON surgery for tools that should not each own it.
 
 ![shape: mise + BATS](https://img.shields.io/badge/shape-mise%20%2B%20BATS-4EAA25?style=flat&logo=gnubash&logoColor=white)
-[![tests: 34](https://img.shields.io/badge/tests-34-brightgreen?style=flat)](test/)
+[![tests: 39](https://img.shields.io/badge/tests-39-brightgreen?style=flat)](test/)
 ![lints: 17](https://img.shields.io/badge/lints-17-blue?style=flat)
 ![README: TSX](https://img.shields.io/badge/README-TSX-f472b6?style=flat)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
@@ -172,7 +172,7 @@ readme build --check
 git diff --check
 ```
 
-The suite currently has **34 tests** and **13 public tasks**. CI runs on **ubuntu-latest + macos-latest**.
+The suite currently has **39 tests** and **13 public tasks**. CI runs on **ubuntu-latest + macos-latest**.
 
 <div align="center">
 
