@@ -4,6 +4,7 @@
 #USAGE flag "--keystroke <keystroke>" required=#true help="Zed key binding, for example cmd-shift-d"
 #USAGE flag "--task <task>" required=#true help="Zed task label to spawn"
 #USAGE flag "--context <context>" default="Workspace" help="Zed keymap context"
+#USAGE example "mise run zed:keymap:check-task --keystroke cmd-shift-d --task 'comments: dispatch current file'" header="Check a task binding"
 set -euo pipefail
 
 source "$MISE_CONFIG_ROOT/lib/zed/keymap.sh"

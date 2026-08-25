@@ -7,8 +7,8 @@
 Boring JSON surgery for tools that should not each own it.
 
 ![shape: mise + BATS](https://img.shields.io/badge/shape-mise%20%2B%20BATS-4EAA25?style=flat&logo=gnubash&logoColor=white)
-[![tests: 34](https://img.shields.io/badge/tests-34-brightgreen?style=flat)](test/)
-![lints: 9](https://img.shields.io/badge/lints-9-blue?style=flat)
+[![tests: 40](https://img.shields.io/badge/tests-40-brightgreen?style=flat)](test/)
+![lints: 17](https://img.shields.io/badge/lints-17-blue?style=flat)
 ![README: TSX](https://img.shields.io/badge/README-TSX-f472b6?style=flat)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
 
@@ -141,15 +141,23 @@ When installed by shiv, the shim exports `CTL_CALLER_PWD` before running the tas
 This repo asks [codebase](https://github.com/KnickKnackLabs/codebase) to run these lint rules:
 
 ```
+shellcheck
+or-true
+bash-empty-argv-forwarding
+bash-empty-array-expansions
+exec-stderr-persistence
+gum-table
 mise-settings
+mise-usage-examples
+variadic-args
+mcr-scope
 bats-test-helper
 bats-test-task
-mcr-scope
-or-true
-shellcheck
-gum-table
-caller-pwd-contract
+bats-public-task-path
 github-actions
+ci-lint-enforcement
+caller-pwd-contract
+mise-shiv-plugin
 ```
 
 </details>
@@ -164,7 +172,7 @@ readme build --check
 git diff --check
 ```
 
-The suite currently has **34 tests** and **13 public tasks**. CI runs on **ubuntu-latest + macos-latest**.
+The suite currently has **40 tests** and **13 public tasks**. CI runs on **ubuntu-latest + macos-latest**.
 
 <div align="center">
 

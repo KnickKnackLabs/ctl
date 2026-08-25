@@ -202,8 +202,7 @@ JSON
     caller="$BATS_TEST_TMPDIR/$field"
     mkdir -p "$caller"
 
-    run env CTL_CALLER_PWD="$caller" \
-      mise -C "$REPO_DIR" run -q zed:tasks:upsert \
+    CTL_CALLER_PWD="$caller" run ctl zed:tasks:upsert \
       --label invalid \
       --command true \
       "--$field" "$value"
